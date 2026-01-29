@@ -10,7 +10,22 @@ const { getMarketsCached } = require("./services/marketService");
 const app = express();
 const server = http.createServer(app);
 
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.FRONTEND_URL,
+  process.env.FRONTEND_URL_ALT,
+].filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, cb) => {
+      if (!origin) return cb(null, true);
+      if (allowedOrigins.includes(origin)) return cb(null, true);
+      return cb(new Error("CORS not allowed"));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 const io = new Server(server, {
